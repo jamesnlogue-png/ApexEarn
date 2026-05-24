@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>APEX EARN — Parent Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange:#FF6B00;--orange2:#FF9A3C;--red:#D62828;
+  --bg:#06060A;--bg2:#0D0D14;--panel:#101018;--panel2:#161622;
+  --border:#1E1E2E;--border2:#252538;--text:#E8E8F0;
+  --muted:#555570;--muted2:#7070A0;--green:#00D68F;--blue:#00A8FF;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.02) 2px,rgba(0,0,0,0.02) 4px);pointer-events:none;z-index:9999;}
+
+/* PIN GATE */
+.pin-gate{position:fixed;inset:0;background:var(--bg);z-index:9990;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:20px;}
+.pin-logo{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:5px;color:#fff;}
+.pin-logo span{color:var(--orange);}
+.pin-sub{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+.pin-display{display:flex;gap:12px;margin:8px 0;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);transition:all 0.2s;}
+.pin-dot.filled{background:var(--orange);border-color:var(--orange);}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:260px;}
+.pin-key{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--text);cursor:pointer;text-align:center;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+.pin-key:active{background:var(--panel2);transform:scale(0.94);}
+.pin-key.del{font-size:16px;color:var(--muted);}
+.pin-key.empty{visibility:hidden;}
+.pin-error{color:var(--red);font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:2px;min-height:20px;}
+.pin-attempts{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted);}
+
+/* MAIN */
+.wrap{max-width:480px;margin:0 auto;padding:0 14px 80px;position:relative;z-index:1;}
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 35% at 50% -5%,rgba(255,107,0,0.10) 0%,transparent 70%);}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:22px 0 14px;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:4px;color:#fff;line-height:1;text-shadow:0 0 20px rgba(255,255,255,0.2);}
+.logo span{color:var(--orange);text-shadow:0 0 18px rgba(255,107,0,0.5);}
+.hdr-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:3px;color:var(--orange);text-transform:uppercase;}
+
+/* SYNC */
+.sync-bar{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--panel);border:1px solid var(--border);border-radius:4px;margin-bottom:14px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background 0.3s;}
+.sync-dot.online{background:var(--green);box-shadow:0 0 6px rgba(0,214,143,0.6);}
+.sync-txt{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted);flex:1;}
+
+/* SECTION */
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:4px;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:10px;margin:20px 0 10px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:12px 10px;text-align:center;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.s-xp::before{background:var(--orange);}
+.stat.s-cash::before{background:var(--green);}
+.stat.s-streak::before{background:var(--red);}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;line-height:1;margin-bottom:4px;}
+.stat.s-xp .stat-val{color:var(--orange);}
+.stat.s-cash .stat-val{color:var(--green);}
+.stat.s-streak .stat-val{color:var(--red);}
+.stat-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+
+/* PENDING CARDS */
+.no-pending{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:24px;text-align:center;}
+.no-pending-icon{font-size:36px;margin-bottom:8px;}
+.no-pending-txt{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+
+.claim-card{background:var(--panel);border:1px solid rgba(0,168,255,0.3);border-radius:4px;margin-bottom:10px;overflow:hidden;}
+.claim-card-top{display:flex;align-items:center;gap:12px;padding:14px 16px;}
+.claim-icon{font-size:28px;flex-shrink:0;}
+.claim-info{flex:1;min-width:0;}
+.claim-name{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:1px;color:var(--text);}
+.claim-time{font-size:11px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.claim-xp-wrap{text-align:right;flex-shrink:0;}
+.claim-xp{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--blue);}
+.claim-cash{font-size:11px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.claim-btns{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border);}
+.claim-btn{padding:13px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;border:none;cursor:pointer;transition:opacity 0.2s;-webkit-tap-highlight-color:transparent;}
+.claim-btn:active{opacity:0.75;}
+.claim-btn.approve{background:rgba(0,214,143,0.12);color:var(--green);border-right:1px solid var(--border);}
+.claim-btn.deny{background:rgba(214,40,40,0.1);color:var(--red);}
+
+/* HISTORY */
+.history-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--panel);border:1px solid var(--border);border-radius:4px;margin-bottom:8px;}
+.hist-icon{font-size:18px;flex-shrink:0;}
+.hist-info{flex:1;min-width:0;}
+.hist-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;color:var(--text);}
+.hist-time{font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:1px;}
+.hist-status{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;}
+.hist-status.approved{color:var(--green);}
+.hist-status.denied{color:var(--red);}
+.hist-xp{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--muted);}
+
+/* SETTINGS */
+.settings-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:18px;margin-bottom:10px;}
+.field{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.field:last-child{margin-bottom:0;}
+.field label{flex:1;font-size:13px;color:var(--muted2);letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;font-weight:500;}
+.field input{width:80px;background:var(--bg2);border:1px solid var(--border2);border-radius:3px;color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;padding:6px 8px;text-align:center;outline:none;}
+.field input:focus{border-color:var(--orange);}
+.field input.wide{width:130px;font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:1px;}
+.rate-note{font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:14px;font-family:'Barlow Condensed',sans-serif;}
+.save-btn{width:100%;padding:13px;background:var(--orange);border:none;border-radius:3px;color:#000;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;margin-top:4px;transition:opacity 0.2s;}
+.save-btn:hover{opacity:0.85;}
+.reset-btn{width:100%;margin-top:8px;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:3px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
+.reset-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* CHORE XP EDITOR */
+.xp-editor-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.xp-editor-row label{flex:1;font-size:13px;color:var(--muted2);letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;}
+.xp-editor-row input{width:70px;background:var(--bg2);border:1px solid var(--border2);border-radius:3px;color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:16px;padding:6px 8px;text-align:center;outline:none;}
+
+/* KID LINK */
+.kid-link{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;padding:13px;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;text-decoration:none;}
+.kid-link:hover{border-color:var(--orange);color:var(--orange);}
+
+/* NOTIFICATION BADGE */
+.notif-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:13px;width:22px;height:22px;border-radius:50%;margin-left:6px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel2);border:1px solid var(--orange);border-radius:4px;padding:12px 22px;font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:2px;font-weight:600;color:var(--orange);z-index:9998;transition:transform 0.35s cubic-bezier(0.23,1,0.32,1);pointer-events:none;white-space:nowrap;text-transform:uppercase;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* LOADING */
+.loading-screen{position:fixed;inset:0;background:var(--bg);z-index:9988;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.loading-logo{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:5px;color:#fff;}
+.loading-logo span{color:var(--orange);}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">APEX<span>EARN</span></div>
+  <div class="spinner"></div>
+</div>
+
+<!-- PIN GATE -->
+<div class="pin-gate" id="pinGate" style="display:none">
+  <div class="pin-logo">APEX<span>EARN</span></div>
+  <div class="pin-sub">Parent Panel</div>
+  <div class="pin-display">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-error" id="pinError"></div>
+  <div class="pin-keypad">
+    <div class="pin-key" onclick="pinPress('1')">1</div>
+    <div class="pin-key" onclick="pinPress('2')">2</div>
+    <div class="pin-key" onclick="pinPress('3')">3</div>
+    <div class="pin-key" onclick="pinPress('4')">4</div>
+    <div class="pin-key" onclick="pinPress('5')">5</div>
+    <div class="pin-key" onclick="pinPress('6')">6</div>
+    <div class="pin-key" onclick="pinPress('7')">7</div>
+    <div class="pin-key" onclick="pinPress('8')">8</div>
+    <div class="pin-key" onclick="pinPress('9')">9</div>
+    <div class="pin-key empty"></div>
+    <div class="pin-key" onclick="pinPress('0')">0</div>
+    <div class="pin-key del" onclick="pinDel()">⌫</div>
+  </div>
+  <div class="pin-attempts" id="pinAttempts"></div>
+</div>
+
+<!-- MAIN (hidden until PIN passed) -->
+<div class="wrap" id="mainWrap" style="display:none">
+
+  <div class="hdr">
+    <div>
+      <div class="logo">APEX<span>EARN</span></div>
+      <div class="hdr-sub">Parent Panel</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted);">JAMIE</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;color:var(--orange);">iopops227</div>
+    </div>
+  </div>
+
+  <div class="sync-bar">
+    <div class="sync-dot" id="syncDot"></div>
+    <div class="sync-txt" id="syncTxt">Connecting...</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat s-xp"><div class="stat-val" id="statXP">0</div><div class="stat-lbl">Total XP</div></div>
+    <div class="stat s-cash"><div class="stat-val" id="statCash">$0</div><div class="stat-lbl">Earned</div></div>
+    <div class="stat s-streak"><div class="stat-val" id="statStreak">0🔥</div><div class="stat-lbl">Streak</div></div>
+  </div>
+
+  <!-- PENDING APPROVALS -->
+  <div class="section-title">
+    Pending Approvals
+    <span class="notif-badge" id="pendingBadge" style="display:none">0</span>
+  </div>
+  <div id="pendingList"></div>
+
+  <!-- RECENT HISTORY -->
+  <div class="section-title">Recent History</div>
+  <div id="historyList"></div>
+
+  <!-- SETTINGS -->
+  <div class="section-title">Settings</div>
+  <div class="settings-card">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;color:var(--orange);margin-bottom:12px;">Cash Rate</div>
+    <div class="field">
+      <label>$ per XP point</label>
+      <input type="number" id="rateInput" step="0.01" min="0.01" value="0.05">
+    </div>
+    <div class="rate-note" id="rateNote">$0.05/XP = $5.00 per 100 XP</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;color:var(--orange);margin-bottom:12px;">Security</div>
+    <div class="field">
+      <label>New PIN (4 digits)</label>
+      <input type="password" id="newPinInput" maxlength="4" placeholder="••••">
+    </div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;color:var(--orange);margin:14px 0 12px;">XP Per Chore</div>
+    <div id="xpEditor"></div>
+    <button class="save-btn" onclick="saveSettings()">SAVE SETTINGS</button>
+    <button class="reset-btn" onclick="resetAll()">Reset Jamie's Progress</button>
+  </div>
+
+  <a class="kid-link" href="jamie.html">🏎️ View Jamie's Screen</a>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAzMGj6N1x2T72tWvauvi4GUMJhjSzUKwg",
+  authDomain: "apexearn-694ce.firebaseapp.com",
+  databaseURL: "https://apexearn-694ce-default-rtdb.firebaseio.com",
+  projectId: "apexearn-694ce",
+  storageBucket: "apexearn-694ce.firebasestorage.app",
+  messagingSenderId: "815774646982",
+  appId: "1:815774646982:web:2ed65356142f0538b88dc7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+const ROOT = 'apexearn/jamie';
+const CORRECT_PIN = '7272';
+
+const CHORES = [
+  {id:'bed',           name:'Make the Bed',           icon:'🛏️', xp:10},
+  {id:'litter_scoop',  name:'Scoop Cat Litter',       icon:'🐾', xp:10},
+  {id:'water_fill',    name:'Fill Cat Water',         icon:'💧', xp:5},
+  {id:'trash',         name:'Trash + Bins to Street', icon:'🗑️', xp:20},
+  {id:'bins_back',     name:'Return Bins',            icon:'↩️', xp:15},
+  {id:'laundry',       name:'Laundry',                icon:'👕', xp:25},
+  {id:'water_clean',   name:'Clean Cat Water Bowl',   icon:'🫙', xp:10},
+  {id:'bedroom_clean', name:'Clean Bedroom',          icon:'🧹', xp:20},
+  {id:'gameroom_clean',name:'Clean Game Room',        icon:'🎮', xp:20},
+  {id:'litter',        name:'Full Litter Box Change', icon:'🐱', xp:25},
+  {id:'carwash',       name:"Wash Mom's Car",         icon:'🚿', xp:25},
+];
+
+// ── PIN GATE ──
+let pinBuffer = '';
+let pinAttempts = 0;
+let unlocked = false;
+
+window.pinPress = function(d) {
+  if(pinBuffer.length >= 4) return;
+  pinBuffer += d;
+  updatePinDisplay();
+  if(pinBuffer.length === 4) checkPin();
+};
+window.pinDel = function() {
+  pinBuffer = pinBuffer.slice(0,-1);
+  updatePinDisplay();
+  document.getElementById('pinError').textContent='';
+};
+function updatePinDisplay() {
+  for(let i=0;i<4;i++){
+    document.getElementById(`pd${i}`).classList.toggle('filled', i<pinBuffer.length);
+  }
+}
+function checkPin() {
+  // Load PIN from Firebase if overridden, else use default
+  const storedPIN = window._firebasePin || CORRECT_PIN;
+  if(pinBuffer === storedPIN) {
+    unlocked = true;
+    document.getElementById('pinGate').style.display='none';
+    document.getElementById('mainWrap').style.display='block';
+    buildXPEditor();
+  } else {
+    pinAttempts++;
+    pinBuffer='';
+    updatePinDisplay();
+    document.getElementById('pinError').textContent='Incorrect PIN';
+    if(pinAttempts>=3) document.getElementById('pinAttempts').textContent=`${pinAttempts} failed attempts`;
+    setTimeout(()=>document.getElementById('pinError').textContent='', 1500);
+  }
+}
+
+// ── STATE ──
+let S = {};
+
+onValue(ref(db, ROOT), (snapshot) => {
+  S = snapshot.val() || {};
+  // Cache PIN from Firebase
+  window._firebasePin = S.parentPIN || CORRECT_PIN;
+
+  document.getElementById('loadingScreen').style.display='none';
+  if(!unlocked) {
+    document.getElementById('pinGate').style.display='flex';
+  } else {
+    renderDashboard();
+  }
+  document.getElementById('syncDot').className='sync-dot online';
+  document.getElementById('syncTxt').textContent='Live sync active';
+}, ()=>{
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('syncDot').className='sync-dot';
+  document.getElementById('syncTxt').textContent='Connection error';
+});
+
+function getXP(id){ return (S.choreXP&&S.choreXP[id]) || (CHORES.find(c=>c.id===id)||{xp:10}).xp; }
+
+function renderDashboard() {
+  const xp = S.xp||0, cpr = S.cashPerXP||0.05;
+  document.getElementById('statXP').textContent     = xp;
+  document.getElementById('statCash').textContent   = `$${(xp*cpr).toFixed(0)}`;
+  document.getElementById('statStreak').textContent = `${S.streak||0}🔥`;
+  document.getElementById('rateInput').value        = cpr;
+  updateRateNote();
+  renderPending();
+  renderHistory();
+}
+
+function renderPending() {
+  const entries = Object.entries(S.pending||{});
+  const badge = document.getElementById('pendingBadge');
+  if(entries.length===0){
+    badge.style.display='none';
+    document.getElementById('pendingList').innerHTML=`
+      <div class="no-pending">
+        <div class="no-pending-icon">✅</div>
+        <div class="no-pending-txt">No pending approvals</div>
+      </div>`;
+    return;
+  }
+  badge.style.display='inline-flex';
+  badge.textContent=entries.length;
+  const cpr=S.cashPerXP||0.05;
+  document.getElementById('pendingList').innerHTML = entries.map(([id,claim])=>{
+    const time=new Date(claim.ts).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const cash=(claim.xp*cpr).toFixed(2);
+    return `<div class="claim-card">
+      <div class="claim-card-top">
+        <div class="claim-icon">${claim.icon}</div>
+        <div class="claim-info">
+          <div class="claim-name">${claim.name}</div>
+          <div class="claim-time">${time}</div>
+        </div>
+        <div class="claim-xp-wrap">
+          <div class="claim-xp">+${claim.xp} XP</div>
+          <div class="claim-cash">$${cash}</div>
+        </div>
+      </div>
+      <div class="claim-btns">
+        <button class="claim-btn approve" onclick="approveChore('${id}')">✓ APPROVE</button>
+        <button class="claim-btn deny"    onclick="denyChore('${id}')">✕ DENY</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderHistory() {
+  const history = Object.values(S.history||{}).sort((a,b)=>b.ts-a.ts).slice(0,15);
+  if(history.length===0){
+    document.getElementById('historyList').innerHTML=`<div style="text-align:center;padding:20px;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;color:var(--muted);">NO HISTORY YET</div>`;
+    return;
+  }
+  const cpr=S.cashPerXP||0.05;
+  document.getElementById('historyList').innerHTML=history.map(h=>{
+    const time=new Date(h.ts).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const approved=h.action==='approved';
+    return `<div class="history-item">
+      <div class="hist-icon">${h.icon||'📋'}</div>
+      <div class="hist-info">
+        <div class="hist-name">${h.name}</div>
+        <div class="hist-time">${time}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="hist-status ${approved?'approved':'denied'}">${approved?'APPROVED':'DENIED'}</div>
+        <div class="hist-xp">${approved?'+'+h.xp+' XP':'-'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildXPEditor() {
+  document.getElementById('xpEditor').innerHTML = CHORES.map(c=>`
+    <div class="xp-editor-row">
+      <label>${c.icon} ${c.name}</label>
+      <input type="number" id="xp_${c.id}" value="${getXP(c.id)}" min="1" max="500">
+    </div>`).join('');
+}
+
+function updateRateNote() {
+  const r=parseFloat(document.getElementById('rateInput').value)||0.05;
+  document.getElementById('rateNote').textContent=`$${r.toFixed(2)}/XP = $${(r*100).toFixed(2)} per 100 XP`;
+}
+document.addEventListener('input',e=>{ if(e.target.id==='rateInput') updateRateNote(); });
+
+// ── APPROVE / DENY ──
+window.approveChore = async function(id) {
+  const claim=S.pending[id]; if(!claim) return;
+  const newXP=(S.xp||0)+claim.xp;
+  // Streak logic
+  let streak=S.streak||0, lastStreakDay=S.lastStreakDay||null;
+  const updates={};
+  updates[`${ROOT}/xp`]=newXP;
+  updates[`${ROOT}/pending/${id}`]=null;
+  updates[`${ROOT}/done/${id}/${claim.key}`]=true;
+  // Log history
+  const histKey=Date.now();
+  updates[`${ROOT}/history/${histKey}`]={ name:claim.name, icon:claim.icon, xp:claim.xp, ts:Date.now(), action:'approved' };
+  await update(ref(db), updates);
+  toast(`✅ APPROVED: ${claim.name} · +${claim.xp} XP`);
+};
+
+window.denyChore = async function(id) {
+  const claim=S.pending[id]; if(!claim) return;
+  const updates={};
+  updates[`${ROOT}/pending/${id}`]=null;
+  const histKey=Date.now();
+  updates[`${ROOT}/history/${histKey}`]={ name:claim.name, icon:claim.icon, xp:claim.xp, ts:Date.now(), action:'denied' };
+  await update(ref(db), updates);
+  toast(`❌ DENIED: ${claim.name}`);
+};
+
+// ── SETTINGS ──
+window.saveSettings = async function() {
+  const r=parseFloat(document.getElementById('rateInput').value);
+  const updates={};
+  if(!isNaN(r)&&r>0) updates[`${ROOT}/cashPerXP`]=r;
+  const newPin=document.getElementById('newPinInput').value.trim();
+  if(newPin.length===4&&/^\d+$/.test(newPin)){
+    updates[`${ROOT}/parentPIN`]=newPin;
+    window._firebasePin=newPin;
+  }
+  CHORES.forEach(c=>{
+    const el=document.getElementById(`xp_${c.id}`);
+    if(el){const v=parseInt(el.value);if(!isNaN(v)&&v>0)updates[`${ROOT}/choreXP/${c.id}`]=v;}
+  });
+  await update(ref(db),updates);
+  toast('SETTINGS SAVED');
+};
+
+window.resetAll = async function() {
+  if(!confirm("Reset ALL of Jamie's XP and progress?")) return;
+  await set(ref(db,ROOT),{ xp:0, done:{}, pending:{}, streak:0, lastStreakDay:null, cashPerXP:S.cashPerXP||0.05 });
+  toast('PROGRESS RESET');
+};
+
+function toast(msg,dur=2500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),dur);
+}
+</script>
+</body>
+</html>

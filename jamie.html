@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>APEX EARN — iopops227</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange: #FF6B00; --orange2: #FF9A3C; --red: #D62828;
+  --bg: #06060A; --bg2: #0D0D14; --panel: #101018; --panel2: #161622;
+  --border: #1E1E2E; --border2: #252538; --text: #E8E8F0;
+  --muted: #555570; --muted2: #7070A0; --green: #00D68F; --blue: #00A8FF;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.02) 2px,rgba(0,0,0,0.02) 4px);pointer-events:none;z-index:9999;}
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 35% at 50% -5%,rgba(255,107,0,0.10) 0%,transparent 70%),radial-gradient(ellipse 40% 20% at 10% 100%,rgba(214,40,40,0.06) 0%,transparent 60%);}
+.wrap{max-width:480px;margin:0 auto;padding:0 14px 120px;position:relative;z-index:1;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:22px 0 14px;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:4px;color:#FFF;line-height:1;text-shadow:0 0 20px rgba(255,255,255,0.2);}
+.logo span{color:var(--orange);text-shadow:0 0 18px rgba(255,107,0,0.5);}
+.hdr-right{text-align:right;}
+.hdr-cash-val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--green);letter-spacing:2px;line-height:1;}
+.hdr-cash-lbl{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+.hdr-gamertag{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;color:var(--orange);text-transform:uppercase;margin-bottom:2px;}
+
+/* SYNC STATUS */
+.sync-bar{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--panel);border:1px solid var(--border);border-radius:4px;margin-bottom:12px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background 0.3s;}
+.sync-dot.online{background:var(--green);box-shadow:0 0 6px rgba(0,214,143,0.6);}
+.sync-dot.pending-dot{background:var(--blue);}
+.sync-txt{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted);flex:1;}
+.sync-pending-count{font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--blue);letter-spacing:1px;}
+
+/* CAR VIEWPORT */
+.car-viewport{position:relative;background:#08080F;border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:12px;}
+.car-bg{position:absolute;inset:0;background:radial-gradient(ellipse 90% 60% at 50% 30%,rgba(255,107,0,0.07) 0%,transparent 65%),radial-gradient(ellipse 100% 50% at 50% 100%,rgba(0,0,0,0.8) 0%,transparent 60%),linear-gradient(180deg,#0C0C18 0%,#06060A 100%);}
+.floor-grid{position:absolute;bottom:0;left:0;right:0;height:90px;overflow:hidden;z-index:1;}
+.floor-grid::before{content:'';position:absolute;bottom:0;left:-100%;right:-100%;height:300px;background-image:repeating-linear-gradient(90deg,rgba(255,107,0,0.08) 0px,rgba(255,107,0,0.08) 1px,transparent 1px,transparent 50px),repeating-linear-gradient(0deg,rgba(255,107,0,0.08) 0px,rgba(255,107,0,0.08) 1px,transparent 1px,transparent 40px);transform:perspective(120px) rotateX(50deg);transform-origin:bottom center;}
+.spotlight{position:absolute;top:0;left:50%;transform:translateX(-50%);width:400px;height:100%;background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(255,255,255,0.04) 0%,transparent 60%);z-index:1;pointer-events:none;}
+.car-photo-wrap{position:relative;height:220px;z-index:3;display:flex;align-items:flex-end;justify-content:center;padding-bottom:20px;}
+.car-photo{max-width:100%;max-height:195px;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 20px 40px rgba(0,0,0,0.9)) drop-shadow(0 0 60px rgba(255,107,0,0.12));animation:carFloat 5s ease-in-out infinite;transition:opacity 0.4s ease;}
+.car-reflection{position:absolute;bottom:0;left:50%;transform:translateX(-50%) scaleY(-1);max-width:85%;max-height:80px;width:auto;height:auto;object-fit:contain;opacity:0.1;mask-image:linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 100%);-webkit-mask-image:linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 100%);filter:blur(2px);z-index:2;}
+@keyframes carFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+.car-ground-shadow{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:70%;height:16px;background:radial-gradient(ellipse,rgba(0,0,0,0.85) 0%,transparent 70%);z-index:2;animation:shadowPulse 5s ease-in-out infinite;}
+@keyframes shadowPulse{0%,100%{transform:translateX(-50%) scaleX(1);opacity:0.85;}50%{transform:translateX(-50%) scaleX(0.88);opacity:0.5;}}
+.car-badge{position:absolute;top:14px;left:16px;z-index:4;}
+.car-badge-tier{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:3px;color:var(--orange);text-transform:uppercase;margin-bottom:2px;}
+.car-badge-model{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:#fff;line-height:1;text-shadow:0 2px 12px rgba(0,0,0,0.8);}
+.car-badge-mods{margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;max-width:200px;}
+.mod-chip{font-size:9px;letter-spacing:1.5px;font-family:'Barlow Condensed',sans-serif;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:2px;background:rgba(255,107,0,0.14);border:1px solid rgba(255,107,0,0.35);color:var(--orange2);backdrop-filter:blur(4px);}
+.car-hp-badge{position:absolute;top:14px;right:14px;z-index:4;text-align:right;}
+.hp-number{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:var(--orange);line-height:1;text-shadow:0 0 20px rgba(255,107,0,0.5);}
+.hp-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;}
+.car-floor{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.6) 100%);z-index:2;}
+.xp-strip{position:relative;z-index:4;padding:10px 16px 14px;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.7) 100%);}
+.xp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.xp-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:3px;color:var(--muted2);text-transform:uppercase;}
+.xp-num{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--orange);}
+.xp-track{height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--orange),var(--orange2));border-radius:2px;transition:width 1s cubic-bezier(0.23,1,0.32,1);position:relative;}
+.xp-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:10px;background:rgba(255,255,255,0.5);filter:blur(3px);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:12px 10px;text-align:center;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.s-xp::before{background:var(--orange);}
+.stat.s-cash::before{background:var(--green);}
+.stat.s-streak::before{background:var(--red);}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;line-height:1;margin-bottom:4px;}
+.stat.s-xp .stat-val{color:var(--orange);}
+.stat.s-cash .stat-val{color:var(--green);}
+.stat.s-streak .stat-val{color:var(--red);}
+.stat-lbl{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+
+/* SECTION */
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:4px;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:10px;margin:20px 0 10px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* CHORE CARDS */
+.chore{background:var(--panel);border:1px solid var(--border);border-radius:4px;margin-bottom:8px;display:flex;align-items:center;cursor:pointer;overflow:hidden;transition:border-color 0.2s;-webkit-tap-highlight-color:transparent;user-select:none;}
+.chore:active{opacity:0.82;transform:scale(0.99);}
+.chore.done{border-color:rgba(0,214,143,0.25);}
+.chore.pending-state{border-color:rgba(0,168,255,0.3);}
+.chore.bonus-chore{border-color:rgba(255,107,0,0.3);}
+.chore-accent{width:3px;align-self:stretch;background:var(--border2);flex-shrink:0;transition:background 0.2s;}
+.chore.done .chore-accent{background:var(--green);}
+.chore.pending-state .chore-accent{background:var(--blue);}
+.chore-icon-wrap{width:50px;height:52px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;}
+.chore-body{flex:1;min-width:0;padding:12px 8px 12px 0;}
+.chore-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:1px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chore-note{font-size:11px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.chore-right{padding:0 14px 0 8px;text-align:right;flex-shrink:0;}
+.chore-xp{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--orange);line-height:1;}
+.chore.done .chore-xp{color:var(--green);}
+.chore.pending-state .chore-xp{color:var(--blue);}
+.chore-cash-amt{font-size:11px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.chore-check{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:14px;transition:all 0.2s;font-size:13px;color:transparent;}
+.chore.done .chore-check{background:var(--green);border-color:var(--green);color:#000;font-weight:700;color:#000;}
+.chore.pending-state .chore-check{background:var(--blue);border-color:var(--blue);color:#fff;font-size:12px;}
+
+/* GARAGE */
+.garage-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.garage-scroll::-webkit-scrollbar{display:none;}
+.garage-card{min-width:130px;max-width:130px;background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden;flex-shrink:0;position:relative;transition:border-color 0.2s;}
+.garage-card.g-active{border-color:var(--orange);box-shadow:0 0 16px rgba(255,107,0,0.18);}
+.garage-card.g-owned{border-color:rgba(0,214,143,0.3);}
+.garage-card.g-locked{opacity:0.35;}
+.garage-img-wrap{width:100%;height:64px;background:#0A0A12;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
+.garage-img-wrap::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(255,107,0,0.07) 0%,transparent 70%);}
+.garage-img{width:120px;height:56px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.8));transition:opacity 0.3s;}
+.g-locked .garage-img{filter:drop-shadow(0 4px 8px rgba(0,0,0,0.8)) grayscale(1) brightness(0.5);}
+.garage-info{padding:7px 9px 9px;}
+.garage-name{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text);text-transform:uppercase;line-height:1.2;}
+.garage-req{font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:3px;}
+.garage-status{position:absolute;top:6px;right:6px;font-size:8px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1.5px;padding:2px 5px;border-radius:2px;text-transform:uppercase;}
+.g-active .garage-status{background:rgba(255,107,0,0.22);color:var(--orange);}
+.g-owned .garage-status{background:rgba(0,214,143,0.15);color:var(--green);}
+
+/* PENDING PANEL */
+.pending-panel{background:var(--panel);border:1px solid rgba(0,168,255,0.25);border-radius:4px;padding:14px;margin-bottom:12px;display:none;}
+.pending-panel.has-pending{display:block;}
+.pending-hdr{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;color:var(--blue);margin-bottom:10px;}
+.pending-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.pending-item:last-child{border-bottom:none;}
+.pending-item-icon{font-size:20px;flex-shrink:0;}
+.pending-item-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;color:var(--text);flex:1;}
+.pending-item-xp{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--blue);letter-spacing:1px;}
+.pending-cancel{background:transparent;border:1px solid var(--border2);border-radius:3px;color:var(--muted);font-size:11px;padding:3px 8px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel2);border:1px solid var(--orange);border-radius:4px;padding:12px 22px;font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:2px;font-weight:600;color:var(--orange);z-index:9998;transition:transform 0.35s cubic-bezier(0.23,1,0.32,1);pointer-events:none;white-space:nowrap;text-transform:uppercase;box-shadow:0 0 30px rgba(255,107,0,0.2);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.xp-burst{position:fixed;font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--orange);pointer-events:none;z-index:9998;text-shadow:0 0 20px rgba(255,107,0,0.7);animation:burstUp 0.9s cubic-bezier(0.23,1,0.32,1) forwards;}
+@keyframes burstUp{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-90px) scale(1.5);}}
+.unlock-flash{position:fixed;inset:0;z-index:9990;background:rgba(255,107,0,0.08);animation:flashOut 0.6s ease-out forwards;pointer-events:none;}
+@keyframes flashOut{0%{opacity:1}100%{opacity:0}}
+
+/* LOADING */
+.loading-screen{position:fixed;inset:0;background:var(--bg);z-index:9997;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.loading-logo{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:6px;color:#fff;}
+.loading-logo span{color:var(--orange);}
+.loading-sub{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;}
+.spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* BOTTOM NAV HINT */
+.parent-link{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:24px;padding:14px;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;text-decoration:none;}
+.parent-link:hover{border-color:var(--orange);color:var(--orange);}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+
+<!-- LOADING SCREEN -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">APEX<span>EARN</span></div>
+  <div class="spinner"></div>
+  <div class="loading-sub">Connecting...</div>
+</div>
+
+<div class="wrap" id="mainWrap" style="display:none">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="logo">APEX<span>EARN</span></div>
+    <div class="hdr-right">
+      <div class="hdr-gamertag">iopops227</div>
+      <div class="hdr-cash-val" id="cashVal">$0.00</div>
+      <div class="hdr-cash-lbl">Cash Earned</div>
+    </div>
+  </div>
+
+  <!-- SYNC STATUS -->
+  <div class="sync-bar">
+    <div class="sync-dot" id="syncDot"></div>
+    <div class="sync-txt" id="syncTxt">Connecting...</div>
+    <div class="sync-pending-count" id="syncPendingCount"></div>
+  </div>
+
+  <!-- CAR VIEWPORT -->
+  <div class="car-viewport">
+    <div class="car-bg"></div>
+    <div class="floor-grid"></div>
+    <div class="spotlight"></div>
+    <div class="car-badge">
+      <div class="car-badge-tier" id="carTier">TIER 1 — STREET</div>
+      <div class="car-badge-model" id="carModel">CIVIC Si</div>
+      <div class="car-badge-mods" id="carMods"></div>
+    </div>
+    <div class="car-hp-badge">
+      <div class="hp-number" id="carHP">200</div>
+      <div class="hp-label">HP</div>
+    </div>
+    <div class="car-photo-wrap">
+      <img class="car-photo" id="carPhoto" src="" alt="">
+      <div class="car-ground-shadow"></div>
+      <img class="car-reflection" id="carReflection" src="" alt="">
+    </div>
+    <div class="car-floor"></div>
+    <div class="xp-strip">
+      <div class="xp-row">
+        <span class="xp-label" id="xpNextLbl">NEXT UNLOCK</span>
+        <span class="xp-num" id="xpNum">0 XP</span>
+      </div>
+      <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat s-xp"><div class="stat-val" id="statXP">0</div><div class="stat-lbl">Total XP</div></div>
+    <div class="stat s-cash"><div class="stat-val" id="statCash">$0</div><div class="stat-lbl">Earned</div></div>
+    <div class="stat s-streak"><div class="stat-val" id="statStreak">0🔥</div><div class="stat-lbl">Streak</div></div>
+  </div>
+
+  <!-- PENDING PANEL -->
+  <div class="pending-panel" id="pendingPanel">
+    <div class="pending-hdr">⏳ Awaiting Parent Approval</div>
+    <div id="pendingList"></div>
+  </div>
+
+  <!-- CHORES -->
+  <div class="section-title">Daily Missions</div>
+  <div id="dailyList"></div>
+  <div class="section-title">Weekly Missions</div>
+  <div id="weeklyList"></div>
+  <div class="section-title" style="color:var(--orange2);">⚡ Bonus Missions</div>
+  <div id="bonusList"></div>
+  <div class="section-title">Bi-Weekly Missions</div>
+  <div id="biweeklyList"></div>
+
+  <!-- GARAGE -->
+  <div class="section-title">Garage</div>
+  <div class="garage-scroll" id="garageRow"></div>
+
+  <a class="parent-link" href="parent.html">⚙️ Parent Panel</a>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAzMGj6N1x2T72tWvauvi4GUMJhjSzUKwg",
+  authDomain: "apexearn-694ce.firebaseapp.com",
+  databaseURL: "https://apexearn-694ce-default-rtdb.firebaseio.com",
+  projectId: "apexearn-694ce",
+  storageBucket: "apexearn-694ce.firebasestorage.app",
+  messagingSenderId: "815774646982",
+  appId: "1:815774646982:web:2ed65356142f0538b88dc7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+const ROOT = 'apexearn/jamie';
+
+// ── FLEET ──
+const FLEET = [
+  {id:'civic',      short:'CIVIC Si',         tier:'TIER 1 — STREET',       hp:'200',  xpReq:0,    img:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/2020_Honda_Civic_Si_sedan_%28facelift%2C_red%29%2C_front_8.21.19.jpg/1280px-2020_Honda_Civic_Si_sedan_%28facelift%2C_red%29%2C_front_8.21.19.jpg',  mods:['Front Splitter','Side Skirts','Trunk Wing','Lowered']},
+  {id:'challenger', short:'CHALLENGER R/T',   tier:'TIER 2 — MUSCLE',       hp:'375',  xpReq:100,  img:'https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/2015_Dodge_Challenger_R-T_-_Flickr_-_skinnylawyer.jpg/1280px-2015_Dodge_Challenger_R-T_-_Flickr_-_skinnylawyer.jpg',                    mods:['Cold Air Intake','Lowering Springs','20" Black Rims','Tinted']},
+  {id:'mustang',    short:'SHELBY GT500',      tier:'TIER 3 — PONY',         hp:'760',  xpReq:250,  img:'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/2020_Ford_Mustang_Shelby_GT500_at_2019_New_England_International_Auto_Show.jpg/1280px-2020_Ford_Mustang_Shelby_GT500_at_2019_New_England_International_Auto_Show.jpg', mods:['Supercharger','Carbon Track Pkg','Brembo Brakes','Coilovers']},
+  {id:'corvette',   short:'C8 CORVETTE Z06',   tier:'TIER 4 — SUPERCAR',     hp:'670',  xpReq:500,  img:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/2023_Chevrolet_Corvette_Z06_%28C8%29_at_the_2022_New_York_International_Auto_Show_%28cropped%29.jpg/1280px-2023_Chevrolet_Corvette_Z06_%28C8%29_at_the_2022_New_York_International_Auto_Show_%28cropped%29.jpg', mods:['Z07 Aero Pkg','Carbon Fiber Body','CCB Brakes','Forged Wheels']},
+  {id:'huracan',    short:'HURACÁN EVO',        tier:'TIER 5 — EXOTIC',       hp:'640',  xpReq:800,  img:'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Lamborghini_Hurac%C3%A1n_EVO_%28Gest%C3%BCt_Strunkede%2C_2020%29_01.jpg/1280px-Lamborghini_Hurac%C3%A1n_EVO_%28Gest%C3%BCt_Strunkede%2C_2020%29_01.jpg', mods:['Novitec Body Kit','Carbon Roof','Capristo Exhaust','Full CF Interior']},
+  {id:'ferrari',    short:'FERRARI 488 PISTA',  tier:'TIER 6 — PRANCING HORSE',hp:'720', xpReq:1200, img:'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Ferrari_488_Pista_%28Gest%C3%BCt_Strunkede%2C_2020%29_01.jpg/1280px-Ferrari_488_Pista_%28Gest%C3%BCt_Strunkede%2C_2020%29_01.jpg', mods:['Pista Aero Kit','Titanium Exhaust','Carbon Shell','Slick Tires']},
+  {id:'mclaren',    short:'McLAREN 720S',        tier:'TIER 7 — HYPERCAR',     hp:'710',  xpReq:1700, img:'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/McLaren_720S_-_Flickr_-_Alexandre_Pr%C3%A9vot_%281%29.jpg/1280px-McLaren_720S_-_Flickr_-_Alexandre_Pr%C3%A9vot_%281%29.jpg', mods:['MSO Track Pkg','Full Carbon Kit','Race Exhaust','Trofeo R Tires']},
+  {id:'bugatti',    short:'CHIRON SS 300+',      tier:'TIER 8 — LEGEND',       hp:'1577', xpReq:2500, img:'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Bugatti_Chiron_-_Flickr_-_Alexandre_Pr%C3%A9vot.jpg/1280px-Bugatti_Chiron_-_Flickr_-_Alexandre_Pr%C3%A9vot.jpg', mods:['Super Sport Aero','Exposed Carbon','Titanium Wing','Michelin Cup 2']},
+];
+
+const CHORES = [
+  {id:'bed',           name:'Make the Bed',           icon:'🛏️', freq:'daily',    xp:10, note:'Every morning'},
+  {id:'litter_scoop',  name:'Scoop Cat Litter',       icon:'🐾', freq:'daily',    xp:10, note:'Daily scoop'},
+  {id:'water_fill',    name:'Fill Cat Water',         icon:'💧', freq:'daily',    xp:5,  note:'Fresh water daily'},
+  {id:'trash',         name:'Trash + Bins to Street', icon:'🗑️', freq:'weekly',   xp:20, note:'Take out trash & move bins'},
+  {id:'bins_back',     name:'Return Bins',            icon:'↩️', freq:'weekly',   xp:15, note:'Day after pickup'},
+  {id:'laundry',       name:'Laundry',                icon:'👕', freq:'weekly',   xp:25, note:'Wash · Dry · Fold'},
+  {id:'water_clean',   name:'Clean Cat Water Bowl',   icon:'🫙', freq:'weekly',   xp:10, note:'Scrub & refill bowl'},
+  {id:'bedroom_clean', name:'Clean Bedroom',          icon:'🧹', freq:'weekly',   xp:20, note:'Full bedroom tidy'},
+  {id:'gameroom_clean',name:'Clean Game Room',        icon:'🎮', freq:'weekly',   xp:20, note:'Full game room tidy'},
+  {id:'litter',        name:'Full Litter Box Change', icon:'🐱', freq:'biweekly', xp:25, note:'Complete litter change · Every 2 weeks'},
+  {id:'carwash',       name:"Wash Mom's Car",         icon:'🚿', freq:'weekly',   xp:25, note:'Bonus · Full wash & dry', bonus:true},
+];
+
+// ── PERIOD KEYS ──
+function todayKey()   { return new Date().toISOString().slice(0,10); }
+function weekKey() {
+  const d=new Date(), day=d.getDay(), diff=d.getDate()-day+(day===0?-6:1);
+  return new Date(new Date(d).setDate(diff)).toISOString().slice(0,10);
+}
+function biweekKey() {
+  const epoch=new Date('2024-01-01'), msW=7*24*60*60*1000;
+  const weeks=Math.floor((new Date()-epoch)/msW);
+  return new Date(epoch.getTime()+Math.floor(weeks/2)*2*msW).toISOString().slice(0,10);
+}
+function periodKey(c) {
+  if(c.freq==='daily')    return todayKey();
+  if(c.freq==='biweekly') return biweekKey();
+  return weekKey();
+}
+
+// ── STATE (from Firebase) ──
+let S = { xp:0, done:{}, pending:{}, streak:0, lastStreakDay:null, cashPerXP:0.05, choreXP:{} };
+
+function currentCar() {
+  let car=FLEET[0];
+  for(const f of FLEET){ if(S.xp>=f.xpReq) car=f; else break; }
+  return car;
+}
+function nextCar() {
+  for(const f of FLEET){ if(S.xp<f.xpReq) return f; }
+  return null;
+}
+function getXP(id) { return (S.choreXP&&S.choreXP[id]) || (CHORES.find(c=>c.id===id)||{xp:10}).xp; }
+function isDone(c)    { return !!(S.done&&S.done[c.id]&&S.done[c.id][periodKey(c)]); }
+function isPending(c) { return !!(S.pending&&S.pending[c.id]&&S.pending[c.id].key===periodKey(c)); }
+
+// ── RENDER ──
+function render() {
+  const car=currentCar(), next=nextCar();
+  document.getElementById('carPhoto').src      = car.img;
+  document.getElementById('carReflection').src = car.img;
+  document.getElementById('carTier').textContent  = car.tier;
+  document.getElementById('carModel').textContent = car.short;
+  document.getElementById('carHP').textContent    = car.hp;
+  document.getElementById('carMods').innerHTML = car.mods.map(m=>`<span class="mod-chip">${m}</span>`).join('');
+
+  let pct=0, nextLbl='MAX — LEGEND STATUS', xpDisp=`${S.xp} XP`;
+  if(next){
+    const span=next.xpReq-car.xpReq;
+    pct=Math.min(100,((S.xp-car.xpReq)/span)*100);
+    nextLbl=`NEXT: ${next.short}`;
+    xpDisp=`${S.xp} / ${next.xpReq} XP`;
+  } else { pct=100; }
+  document.getElementById('xpFill').style.width    = pct+'%';
+  document.getElementById('xpNextLbl').textContent = nextLbl;
+  document.getElementById('xpNum').textContent     = xpDisp;
+
+  const cash=(S.xp*(S.cashPerXP||0.05)).toFixed(2);
+  document.getElementById('cashVal').textContent   = `$${cash}`;
+  document.getElementById('statXP').textContent    = S.xp;
+  document.getElementById('statCash').textContent  = `$${parseFloat(cash).toFixed(0)}`;
+  document.getElementById('statStreak').textContent= `${S.streak||0}🔥`;
+
+  // Pending panel
+  const pendingEntries = Object.entries(S.pending||{});
+  const pp = document.getElementById('pendingPanel');
+  if(pendingEntries.length>0){
+    pp.classList.add('has-pending');
+    document.getElementById('pendingList').innerHTML = pendingEntries.map(([id,claim])=>`
+      <div class="pending-item">
+        <div class="pending-item-icon">${claim.icon}</div>
+        <div class="pending-item-name">${claim.name}</div>
+        <div class="pending-item-xp">+${claim.xp} XP</div>
+        <button class="pending-cancel" onclick="cancelClaim('${id}')">Cancel</button>
+      </div>`).join('');
+    document.getElementById('syncPendingCount').textContent = `${pendingEntries.length} PENDING`;
+  } else {
+    pp.classList.remove('has-pending');
+    document.getElementById('syncPendingCount').textContent = '';
+  }
+
+  document.getElementById('dailyList').innerHTML    = CHORES.filter(c=>c.freq==='daily'&&!c.bonus).map(choreCard).join('');
+  document.getElementById('weeklyList').innerHTML   = CHORES.filter(c=>c.freq==='weekly'&&!c.bonus).map(choreCard).join('');
+  document.getElementById('biweeklyList').innerHTML = CHORES.filter(c=>c.freq==='biweekly'&&!c.bonus).map(choreCard).join('');
+  document.getElementById('bonusList').innerHTML    = CHORES.filter(c=>c.bonus).map(c=>choreCard(c,true)).join('');
+  renderGarage();
+}
+
+function choreCard(c, isBonus=false) {
+  const done=isDone(c), pend=isPending(c), xp=getXP(c.id), cash=(xp*(S.cashPerXP||0.05)).toFixed(2);
+  const state = done?'done':pend?'pending-state':'';
+  let accentStyle = isBonus?'var(--orange)':done?'var(--green)':pend?'var(--blue)':'var(--border2)';
+  let xpLabel = done?`✓ ${xp} XP`:pend?`⏳ ${xp} XP`:`+${xp} XP`;
+  let xpColor = done?'var(--green)':pend?'var(--blue)':isBonus?'var(--orange2)':'var(--orange)';
+  let noteHtml = pend
+    ? `<span style="color:var(--blue);font-size:10px;letter-spacing:1px;">AWAITING APPROVAL</span>`
+    : `<span>${c.note}</span>`;
+  let checkHtml = done
+    ? `<div class="chore-check" style="background:var(--green);border-color:var(--green);color:#000;font-weight:700;">✓</div>`
+    : pend
+      ? `<div class="chore-check" style="background:var(--blue);border-color:var(--blue);color:#fff;">⏳</div>`
+      : `<div class="chore-check"></div>`;
+  const clickable = done?'':(pend?`onclick="cancelClaim('${c.id}')"`:(`onclick="claimChore('${c.id}')"`));
+  return `<div class="chore ${state}${isBonus?' bonus-chore':''}" ${clickable}>
+    <div class="chore-accent" style="background:${accentStyle}"></div>
+    <div class="chore-icon-wrap">${c.icon}</div>
+    <div class="chore-body">
+      <div class="chore-name">${c.name}</div>
+      <div class="chore-note">${noteHtml}</div>
+    </div>
+    <div class="chore-right">
+      <div class="chore-xp" style="color:${xpColor}">${xpLabel}</div>
+      <div class="chore-cash-amt">$${cash}</div>
+    </div>
+    ${checkHtml}
+  </div>`;
+}
+
+function renderGarage() {
+  const cur=currentCar();
+  document.getElementById('garageRow').innerHTML=FLEET.map(car=>{
+    const owned=S.xp>=car.xpReq, active=cur.id===car.id;
+    const cls=active?'g-active':owned?'g-owned':'g-locked';
+    const status=active?`<span class="garage-status">ACTIVE</span>`:owned?`<span class="garage-status">OWNED</span>`:'';
+    return `<div class="garage-card ${cls}">
+      ${status}
+      <div class="garage-img-wrap"><img class="garage-img" src="${car.img}" alt="${car.short}" loading="lazy"></div>
+      <div class="garage-info">
+        <div class="garage-name">${car.short}</div>
+        <div class="garage-req">${owned?car.hp+' HP':car.xpReq+' XP'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── CLAIM CHORE ──
+window.claimChore = async function(id) {
+  const chore=CHORES.find(c=>c.id===id);
+  const key=periodKey(chore), xp=getXP(id);
+  const claim={ key, xp, name:chore.name, icon:chore.icon, ts:Date.now() };
+  const updates = {};
+  updates[`${ROOT}/pending/${id}`] = claim;
+  updates[`${ROOT}/notifications/lastClaim`] = { choreId:id, name:chore.name, xp, ts:Date.now(), seen:false };
+  await update(ref(db), updates);
+  toast('⏳ CLAIM SENT — Waiting for Mom/Dad');
+};
+
+window.cancelClaim = async function(id) {
+  await set(ref(db, `${ROOT}/pending/${id}`), null);
+  toast('Claim cancelled');
+};
+
+// ── FIREBASE LISTENER ──
+onValue(ref(db, ROOT), (snapshot) => {
+  const data = snapshot.val() || {};
+  const prevXP = S.xp;
+  S = {
+    xp:          data.xp          || 0,
+    done:        data.done         || {},
+    pending:     data.pending      || {},
+    streak:      data.streak       || 0,
+    lastStreakDay:data.lastStreakDay|| null,
+    cashPerXP:   data.cashPerXP    || 0.05,
+    choreXP:     data.choreXP      || {},
+  };
+  // XP burst if parent just approved
+  if(S.xp > prevXP && prevXP > 0) {
+    xpBurst(S.xp - prevXP);
+    const prevCar = FLEET.filter(f=>prevXP>=f.xpReq).pop();
+    const newCar  = currentCar();
+    if(newCar && prevCar && newCar.id !== prevCar.id) {
+      unlockFlash();
+      toast(`🔓 UNLOCKED: ${newCar.short}!`, 3500);
+    } else {
+      toast(`✅ APPROVED! +${S.xp-prevXP} XP EARNED`);
+    }
+  }
+  render();
+  // Hide loading screen
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('mainWrap').style.display='block';
+  // Sync status
+  document.getElementById('syncDot').className='sync-dot online';
+  document.getElementById('syncTxt').textContent='Live sync active';
+}, (error) => {
+  document.getElementById('syncDot').className='sync-dot';
+  document.getElementById('syncTxt').textContent='Connection error — check wifi';
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('mainWrap').style.display='block';
+});
+
+// ── FX ──
+function toast(msg,dur=2500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),dur);
+}
+function xpBurst(xp){
+  const el=document.createElement('div');
+  el.className='xp-burst';el.textContent=`+${xp}`;
+  el.style.cssText=`left:${window.innerWidth/2-24}px;top:${window.innerHeight/2-50}px;`;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),900);
+}
+function unlockFlash(){
+  const el=document.createElement('div');el.className='unlock-flash';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),600);
+}
+</script>
+</body>
+</html>
