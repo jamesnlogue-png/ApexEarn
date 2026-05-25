@@ -96,6 +96,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .hist-status.approved{color:var(--green);}
 .hist-status.denied{color:var(--red);}
 .hist-xp{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--muted);}
+.hist-paid{opacity:0.55;}
+.pay-btn{background:rgba(0,214,143,0.15);border:1px solid rgba(0,214,143,0.4);border-radius:3px;color:var(--green);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;padding:4px 8px;cursor:pointer;margin-top:4px;text-transform:uppercase;transition:all 0.15s;-webkit-tap-highlight-color:transparent;display:block;}
+.pay-btn:active{opacity:0.7;transform:scale(0.95);}
 
 /* SETTINGS */
 .settings-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:18px;margin-bottom:10px;}
@@ -194,8 +197,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <!-- STATS -->
   <div class="stats-row">
     <div class="stat s-xp"><div class="stat-val" id="statXP">0</div><div class="stat-lbl">Total XP</div></div>
-    <div class="stat s-cash"><div class="stat-val" id="statCash">$0</div><div class="stat-lbl">Earned</div></div>
-    <div class="stat s-streak"><div class="stat-val" id="statStreak">0🔥</div><div class="stat-lbl">Streak</div></div>
+    <div class="stat s-cash"><div class="stat-val" id="statCash">$0</div><div class="stat-lbl">Owed</div></div>
+    <div class="stat s-streak"><div class="stat-val" id="statPaid">$0</div><div class="stat-lbl">Paid Out</div></div>
   </div>
 
   <!-- PENDING APPROVALS -->
@@ -337,13 +340,27 @@ onValue(ref(db, ROOT), (snapshot) => {
   if(txt) txt.textContent='Connection error — check wifi';
 });
 
+// ── PERIOD KEYS (timezone-safe, must match jamie.html) ──
+function todayKey() {
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function weekKey() {
+  const d=new Date(), day=d.getDay(), diff=d.getDate()-day+(day===0?-6:1);
+  const mon=new Date(d); mon.setDate(diff);
+  return `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
+}
+
 function getXP(id){ return (S.choreXP&&S.choreXP[id]) || (CHORES.find(c=>c.id===id)||{xp:10}).xp; }
 
 function renderDashboard() {
   const xp = S.xp||0, cpr = S.cashPerXP||0.05;
+  const totalEarned = xp * cpr;
+  const totalPaid = S.totalPaid || 0;
+  const unpaid = Math.max(0, totalEarned - totalPaid);
   document.getElementById('statXP').textContent     = xp;
-  document.getElementById('statCash').textContent   = `$${(xp*cpr).toFixed(0)}`;
-  document.getElementById('statStreak').textContent = `${S.streak||0}🔥`;
+  document.getElementById('statCash').textContent   = `$${unpaid.toFixed(2)}`;
+  document.getElementById('statPaid').textContent   = `$${totalPaid.toFixed(2)}`;
   document.getElementById('rateInput').value        = cpr;
   updateRateNote();
   renderPending();
@@ -389,7 +406,7 @@ function renderPending() {
 }
 
 function renderHistory() {
-  const history = Object.values(S.history||{}).sort((a,b)=>b.ts-a.ts).slice(0,15);
+  const history = Object.entries(S.history||{}).map(([key,v])=>({...v,key})).sort((a,b)=>b.ts-a.ts).slice(0,20);
   if(history.length===0){
     document.getElementById('historyList').innerHTML=`<div style="text-align:center;padding:20px;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;color:var(--muted);">NO HISTORY YET</div>`;
     return;
@@ -398,31 +415,62 @@ function renderHistory() {
   document.getElementById('historyList').innerHTML=history.map(h=>{
     const time=new Date(h.ts).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
     const approved=h.action==='approved';
-    return `<div class="history-item">
+    const paid=h.paid===true;
+    const cash=approved?(h.xp*cpr).toFixed(2):'0';
+    if(!approved) return `<div class="history-item">
+      <div class="hist-icon">${h.icon||'📋'}</div>
+      <div class="hist-info"><div class="hist-name">${h.name}</div><div class="hist-time">${time}</div></div>
+      <div style="text-align:right"><div class="hist-status denied">DENIED</div><div class="hist-xp">—</div></div>
+    </div>`;
+    return `<div class="history-item ${paid?'hist-paid':''}">
       <div class="hist-icon">${h.icon||'📋'}</div>
       <div class="hist-info">
         <div class="hist-name">${h.name}</div>
-        <div class="hist-time">${time}</div>
+        <div class="hist-time">${time}${paid?' · <span style="color:var(--green)">PAID</span>':''}</div>
       </div>
-      <div style="text-align:right">
-        <div class="hist-status ${approved?'approved':'denied'}">${approved?'APPROVED':'DENIED'}</div>
-        <div class="hist-xp">${approved?'+'+h.xp+' XP':'-'}</div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div class="hist-xp" style="color:var(--green)">+${h.xp} XP</div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">$${cash}</div>
+        ${!paid?`<button class="pay-btn" onclick="markPaid('${h.key}',${h.xp})">PAY $${cash}</button>`
+               :`<div style="font-size:10px;color:var(--green);letter-spacing:1px;margin-top:3px;">✓ PAID</div>`}
       </div>
     </div>`;
   }).join('');
 }
 
 function buildXPEditor() {
-  document.getElementById('xpEditor').innerHTML = CHORES.map(c=>`
-    <div class="xp-editor-row">
+  const cpr = S.cashPerXP||0.05;
+  document.getElementById('xpEditor').innerHTML = CHORES.map(c=>{
+    const xp = getXP(c.id);
+    const cash = (xp * cpr).toFixed(2);
+    return `<div class="xp-editor-row">
       <label>${c.icon} ${c.name}</label>
-      <input type="number" id="xp_${c.id}" value="${getXP(c.id)}" min="1" max="500">
-    </div>`).join('');
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input type="number" id="xp_${c.id}" value="${xp}" min="1" max="500" oninput="updateChoreCash('${c.id}')">
+        <span id="cash_${c.id}" style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--green);letter-spacing:1px;min-width:42px;">$${cash}</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
+function updateChoreCash(id) {
+  const el = document.getElementById(`xp_${id}`);
+  const cashEl = document.getElementById(`cash_${id}`);
+  if(el && cashEl) {
+    const xp = parseInt(el.value)||0;
+    const cpr = parseFloat(document.getElementById('rateInput').value)||0.05;
+    cashEl.textContent = `$${(xp*cpr).toFixed(2)}`;
+  }
+}
 function updateRateNote() {
   const r=parseFloat(document.getElementById('rateInput').value)||0.05;
   document.getElementById('rateNote').textContent=`$${r.toFixed(2)}/XP = $${(r*100).toFixed(2)} per 100 XP`;
+  // Refresh all cash amounts in editor
+  CHORES.forEach(c=>{
+    const el=document.getElementById(`xp_${c.id}`);
+    const cashEl=document.getElementById(`cash_${c.id}`);
+    if(el&&cashEl){ cashEl.textContent=`$${(parseInt(el.value||0)*r).toFixed(2)}`; }
+  });
 }
 document.addEventListener('input',e=>{ if(e.target.id==='rateInput') updateRateNote(); });
 
@@ -451,6 +499,18 @@ window.denyChore = async function(id) {
   updates[`${ROOT}/history/${histKey}`]={ name:claim.name, icon:claim.icon, xp:claim.xp, ts:Date.now(), action:'denied' };
   await update(ref(db), updates);
   toast(`❌ DENIED: ${claim.name}`);
+};
+
+window.markPaid = async function(histKey, xp) {
+  const cpr = S.cashPerXP||0.05;
+  const cashAmt = xp * cpr;
+  const newTotalPaid = (S.totalPaid||0) + cashAmt;
+  const updates = {};
+  updates[`${ROOT}/history/${histKey}/paid`] = true;
+  updates[`${ROOT}/history/${histKey}/paidTs`] = Date.now();
+  updates[`${ROOT}/totalPaid`] = newTotalPaid;
+  await update(ref(db), updates);
+  toast(`💵 PAID: $${cashAmt.toFixed(2)} marked as paid`);
 };
 
 // ── SETTINGS ──

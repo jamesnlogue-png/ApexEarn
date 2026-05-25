@@ -172,7 +172,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     <div class="hdr-right">
       <div class="hdr-gamertag">iopops227</div>
       <div class="hdr-cash-val" id="cashVal">$0.00</div>
-      <div class="hdr-cash-lbl">Cash Earned</div>
+      <div class="hdr-cash-lbl">Owed to You</div>
     </div>
   </div>
 
@@ -215,7 +215,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <!-- STATS -->
   <div class="stats-row">
     <div class="stat s-xp"><div class="stat-val" id="statXP">0</div><div class="stat-lbl">Total XP</div></div>
-    <div class="stat s-cash"><div class="stat-val" id="statCash">$0</div><div class="stat-lbl">Earned</div></div>
+    <div class="stat s-cash"><div class="stat-val" id="statCash">$0</div><div class="stat-lbl">Owed</div></div>
     <div class="stat s-streak"><div class="stat-val" id="statStreak">0🔥</div><div class="stat-lbl">Streak</div></div>
   </div>
 
@@ -289,16 +289,26 @@ const CHORES = [
   {id:'carwash',       name:"Wash Mom's Car",         icon:'🚿', freq:'weekly',   xp:25, note:'Bonus · Full wash & dry', bonus:true},
 ];
 
-// ── PERIOD KEYS ──
-function todayKey()   { return new Date().toISOString().slice(0,10); }
+// ── PERIOD KEYS (timezone-safe) ──
+function todayKey() {
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 function weekKey() {
-  const d=new Date(), day=d.getDay(), diff=d.getDate()-day+(day===0?-6:1);
-  return new Date(new Date(d).setDate(diff)).toISOString().slice(0,10);
+  const d=new Date();
+  const day=d.getDay(); // 0=Sun
+  const diff=d.getDate()-day+(day===0?-6:1); // Monday
+  const mon=new Date(d);
+  mon.setDate(diff);
+  return `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
 }
 function biweekKey() {
-  const epoch=new Date('2024-01-01'), msW=7*24*60*60*1000;
-  const weeks=Math.floor((new Date()-epoch)/msW);
-  return new Date(epoch.getTime()+Math.floor(weeks/2)*2*msW).toISOString().slice(0,10);
+  const epoch=new Date('2024-01-01');
+  const now=new Date();
+  const msW=7*24*60*60*1000;
+  const weeks=Math.floor((now-epoch)/msW);
+  const blockStart=new Date(epoch.getTime()+Math.floor(weeks/2)*2*msW);
+  return `${blockStart.getFullYear()}-${String(blockStart.getMonth()+1).padStart(2,'0')}-${String(blockStart.getDate()).padStart(2,'0')}`;
 }
 function periodKey(c) {
   if(c.freq==='daily')    return todayKey();
@@ -343,10 +353,11 @@ function render() {
   document.getElementById('xpNextLbl').textContent = nextLbl;
   document.getElementById('xpNum').textContent     = xpDisp;
 
-  const cash=(S.xp*(S.cashPerXP||0.05)).toFixed(2);
-  document.getElementById('cashVal').textContent   = `$${cash}`;
+  const totalEarned=(S.xp*(S.cashPerXP||0.05));
+  const unpaid=Math.max(0, totalEarned-(S.totalPaid||0));
+  document.getElementById('cashVal').textContent   = `$${unpaid.toFixed(2)}`;
   document.getElementById('statXP').textContent    = S.xp;
-  document.getElementById('statCash').textContent  = `$${parseFloat(cash).toFixed(0)}`;
+  document.getElementById('statCash').textContent  = `$${unpaid.toFixed(2)}`;
   document.getElementById('statStreak').textContent= `${S.streak||0}🔥`;
 
   // Pending panel
@@ -443,13 +454,14 @@ onValue(ref(db, ROOT), (snapshot) => {
   const data = snapshot.val() || {};
   const prevXP = S.xp;
   S = {
-    xp:          data.xp          || 0,
-    done:        data.done         || {},
-    pending:     data.pending      || {},
-    streak:      data.streak       || 0,
-    lastStreakDay:data.lastStreakDay|| null,
-    cashPerXP:   data.cashPerXP    || 0.05,
-    choreXP:     data.choreXP      || {},
+    xp:           data.xp           || 0,
+    done:         data.done          || {},
+    pending:      data.pending       || {},
+    streak:       data.streak        || 0,
+    lastStreakDay:data.lastStreakDay  || null,
+    cashPerXP:    data.cashPerXP     || 0.05,
+    choreXP:      data.choreXP       || {},
+    totalPaid:    data.totalPaid     || 0,
   };
   // XP burst if parent just approved
   if(S.xp > prevXP && prevXP > 0) {
