@@ -290,13 +290,17 @@ function updatePinDisplay() {
   }
 }
 function checkPin() {
-  // Load PIN from Firebase if overridden, else use default
   const storedPIN = window._firebasePin || CORRECT_PIN;
   if(pinBuffer === storedPIN) {
     unlocked = true;
     document.getElementById('pinGate').style.display='none';
     document.getElementById('mainWrap').style.display='block';
+    const dot = document.getElementById('syncDot');
+    const txt = document.getElementById('syncTxt');
+    if(dot) dot.className='sync-dot online';
+    if(txt) txt.textContent='Live sync active';
     buildXPEditor();
+    renderDashboard();
   } else {
     pinAttempts++;
     pinBuffer='';
@@ -312,7 +316,6 @@ let S = {};
 
 onValue(ref(db, ROOT), (snapshot) => {
   S = snapshot.val() || {};
-  // Cache PIN from Firebase
   window._firebasePin = S.parentPIN || CORRECT_PIN;
 
   document.getElementById('loadingScreen').style.display='none';
@@ -320,13 +323,18 @@ onValue(ref(db, ROOT), (snapshot) => {
     document.getElementById('pinGate').style.display='flex';
   } else {
     renderDashboard();
+    const dot = document.getElementById('syncDot');
+    const txt = document.getElementById('syncTxt');
+    if(dot) dot.className='sync-dot online';
+    if(txt) txt.textContent='Live sync active';
   }
-  document.getElementById('syncDot').className='sync-dot online';
-  document.getElementById('syncTxt').textContent='Live sync active';
-}, ()=>{
+}, (error)=>{
+  console.error('Firebase error:', error);
   document.getElementById('loadingScreen').style.display='none';
-  document.getElementById('syncDot').className='sync-dot';
-  document.getElementById('syncTxt').textContent='Connection error';
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncTxt');
+  if(dot) dot.className='sync-dot';
+  if(txt) txt.textContent='Connection error — check wifi';
 });
 
 function getXP(id){ return (S.choreXP&&S.choreXP[id]) || (CHORES.find(c=>c.id===id)||{xp:10}).xp; }
