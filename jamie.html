@@ -436,7 +436,7 @@ function renderGarage() {
 window.claimChore = async function(id) {
   const chore=CHORES.find(c=>c.id===id);
   const key=periodKey(chore), xp=getXP(id);
-  const claim={ key, xp, name:chore.name, icon:chore.icon, ts:Date.now() };
+  const claim={ key, xp, name:chore.name, icon:chore.icon, freq:chore.freq, ts:Date.now() };
   const updates = {};
   updates[`${ROOT}/pending/${id}`] = claim;
   updates[`${ROOT}/notifications/lastClaim`] = { choreId:id, name:chore.name, xp, ts:Date.now(), seen:false };
