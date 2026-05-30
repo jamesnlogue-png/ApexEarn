@@ -103,6 +103,31 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .section-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:4px;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:10px;margin:20px 0 10px;}
 .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
 
+/* EARNINGS AWARENESS */
+.earnings-banner{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:14px 16px;margin-bottom:10px;position:relative;overflow:hidden;}
+.earnings-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),#FFD700);}
+.earnings-banner-title{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+.earnings-banner-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px;}
+.earnings-banner-earned{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--green);line-height:1;}
+.earnings-banner-max{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--muted2);line-height:1;padding-bottom:3px;}
+.earnings-progress-track{height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.earnings-progress-fill{height:100%;background:linear-gradient(90deg,var(--green),#FFD700);border-radius:3px;transition:width 1s cubic-bezier(0.23,1,0.32,1);}
+.earnings-banner-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1px;color:var(--muted);}
+.earnings-banner-sub span{color:var(--orange2);font-weight:600;}
+.money-nudge{background:rgba(214,40,40,0.08);border:1px solid rgba(214,40,40,0.25);border-radius:4px;padding:12px 16px;margin-bottom:10px;display:none;}
+.money-nudge.show{display:block;}
+.money-nudge-row{display:flex;align-items:center;gap:10px;}
+.money-nudge-icon{font-size:22px;flex-shrink:0;}
+.money-nudge-text{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;color:var(--text);line-height:1.3;}
+.money-nudge-amt{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--red);flex-shrink:0;}
+.streak-preview{background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:4px;padding:12px 16px;margin-bottom:10px;display:none;}
+.streak-preview.show{display:block;}
+.streak-preview-title{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:3px;color:rgba(255,215,0,0.6);text-transform:uppercase;margin-bottom:6px;}
+.streak-preview-row{display:flex;align-items:center;justify-content:space-between;}
+.streak-preview-msg{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:0.5px;color:var(--text);flex:1;line-height:1.3;}
+.streak-preview-msg span{color:#FFD700;}
+.streak-preview-amt{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:#FFD700;flex-shrink:0;margin-left:10px;}
+
 /* CHORE CARDS */
 .chore{background:var(--panel);border:1px solid var(--border);border-radius:4px;margin-bottom:8px;display:flex;align-items:center;cursor:pointer;overflow:hidden;transition:border-color 0.2s;-webkit-tap-highlight-color:transparent;user-select:none;}
 .chore:active{opacity:0.82;transform:scale(0.99);}
@@ -220,19 +245,19 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     <div class="streak-milestones">
       <div class="streak-mile" id="mile3">
         <div class="streak-mile-days">3</div>
-        <div class="streak-mile-bonus">+5 XP/day</div>
+        <div class="streak-mile-bonus">+$0.50/day</div>
       </div>
       <div class="streak-mile" id="mile7">
         <div class="streak-mile-days">7</div>
-        <div class="streak-mile-bonus">+10 XP/day</div>
+        <div class="streak-mile-bonus">+$1.00/day</div>
       </div>
       <div class="streak-mile" id="mile14">
         <div class="streak-mile-days">14</div>
-        <div class="streak-mile-bonus">+15 XP/day</div>
+        <div class="streak-mile-bonus">+$2.00/day</div>
       </div>
       <div class="streak-mile" id="mile30">
         <div class="streak-mile-days">30</div>
-        <div class="streak-mile-bonus">+25 XP/day</div>
+        <div class="streak-mile-bonus">+$4.00/day</div>
       </div>
     </div>
     <button class="streak-claim-btn" id="streakClaimBtn" onclick="claimStreakBonus()">CLAIM STREAK BONUS</button>
@@ -272,6 +297,43 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     <div class="stat s-xp"><div class="stat-val" id="statXP">0</div><div class="stat-lbl">Total XP</div></div>
     <div class="stat s-cash"><div class="stat-val" id="statCash">$0</div><div class="stat-lbl">Owed</div></div>
     <div class="stat s-streak"><div class="stat-val" id="statStreak">0🔥</div><div class="stat-lbl">Streak</div></div>
+  </div>
+
+  <!-- 1. POTENTIAL THIS MONTH BANNER -->
+  <div class="earnings-banner">
+    <div class="earnings-banner-title">💰 Potential This Month</div>
+    <div class="earnings-banner-row">
+      <div>
+        <div class="earnings-banner-earned" id="earnedSoFar">$0.00</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;color:var(--muted);">EARNED SO FAR</div>
+      </div>
+      <div style="text-align:right">
+        <div class="earnings-banner-max" id="maxPossible">of $114.50</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;color:var(--muted);">MAX POSSIBLE</div>
+      </div>
+    </div>
+    <div class="earnings-progress-track">
+      <div class="earnings-progress-fill" id="earningsProgressFill" style="width:0%"></div>
+    </div>
+    <div class="earnings-banner-sub" id="earningsPace"></div>
+  </div>
+
+  <!-- 2. LEAVING MONEY ON THE TABLE NUDGE -->
+  <div class="money-nudge" id="moneyNudge">
+    <div class="money-nudge-row">
+      <div class="money-nudge-icon">⚠️</div>
+      <div class="money-nudge-text" id="moneyNudgeText">Complete today's chores to claim your earnings</div>
+      <div class="money-nudge-amt" id="moneyNudgeAmt">$0</div>
+    </div>
+  </div>
+
+  <!-- 3. STREAK EARNINGS PREVIEW -->
+  <div class="streak-preview" id="streakPreview">
+    <div class="streak-preview-title">🔥 Streak Earnings Preview</div>
+    <div class="streak-preview-row">
+      <div class="streak-preview-msg" id="streakPreviewMsg">Build a streak to unlock bonus cash</div>
+      <div class="streak-preview-amt" id="streakPreviewAmt"></div>
+    </div>
   </div>
 
   <!-- PENDING PANEL -->
@@ -485,6 +547,83 @@ function render() {
   document.getElementById('biweeklyList').innerHTML = CHORES.filter(c=>c.freq==='biweekly'&&!c.bonus).map(choreCard).join('');
   document.getElementById('bonusList').innerHTML    = CHORES.filter(c=>c.bonus).map(c=>choreCard(c,true)).join('');
   renderGarage();
+  renderEarningsAwareness();
+}
+
+// ── EARNINGS AWARENESS ──
+function renderEarningsAwareness() {
+  const cpr = S.cashPerXP || 0.05;
+  const streak = S.streak || 0;
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  const dayOfMonth = now.getDate();
+  const daysLeft = daysInMonth - dayOfMonth;
+
+  // Max monthly calc
+  const maxDaily    = (10+10+5) * cpr * daysInMonth;
+  const maxWeekly   = (20+15+25+10+20+20) * cpr * 4;
+  const maxBiweekly = 25 * cpr * 2;
+  const maxBonus    = 300 * cpr;
+  const maxStreak   = 80 * cpr * daysInMonth;  // 30-day tier: $4.00/day
+  const maxMonthly  = maxDaily + maxWeekly + maxBiweekly + maxBonus + maxStreak;
+
+  // Total earned this month (all XP × rate)
+  const totalEarned = (S.xp||0) * cpr;
+  const earnedPct   = Math.min(100, (totalEarned / maxMonthly) * 100);
+
+  // 1. BANNER
+  document.getElementById('earnedSoFar').textContent       = `$${totalEarned.toFixed(2)}`;
+  document.getElementById('maxPossible').textContent       = `of $${maxMonthly.toFixed(2)}`;
+  document.getElementById('earningsProgressFill').style.width = earnedPct + '%';
+  const dailyRate = totalEarned / Math.max(1, dayOfMonth);
+  const projected = totalEarned + (dailyRate * daysLeft);
+  const projectedPct = Math.min(100, (projected / maxMonthly) * 100);
+  let paceMsg = '';
+  if(projectedPct >= 90)      paceMsg = `🔥 On pace for <span>$${projected.toFixed(2)}</span> this month — elite grind!`;
+  else if(projectedPct >= 60) paceMsg = `📈 Projected <span>$${projected.toFixed(2)}</span> this month — push harder!`;
+  else                         paceMsg = `<span>$${(maxMonthly-totalEarned).toFixed(2)}</span> still up for grabs this month`;
+  document.getElementById('earningsPace').innerHTML = paceMsg;
+
+  // 2. LEAVING MONEY ON TABLE
+  const unclaimedDaily  = CHORES.filter(c=>c.freq==='daily'&&!c.bonus&&!isDone(c)&&!isPending(c));
+  const unclaimedWeekly = CHORES.filter(c=>c.freq==='weekly'&&!c.bonus&&!isDone(c)&&!isPending(c));
+  const nudge = document.getElementById('moneyNudge');
+  if(unclaimedDaily.length > 0) {
+    const leftToday = unclaimedDaily.reduce((s,c)=>s+(getXP(c.id)*cpr),0);
+    document.getElementById('moneyNudgeText').textContent =
+      `${unclaimedDaily.length} daily chore${unclaimedDaily.length>1?'s':''} unclaimed today — don't leave this on the table`;
+    document.getElementById('moneyNudgeAmt').textContent = `-$${leftToday.toFixed(2)}`;
+    nudge.classList.add('show');
+  } else if(unclaimedWeekly.length > 0) {
+    const leftWeek = unclaimedWeekly.reduce((s,c)=>s+(getXP(c.id)*cpr),0);
+    document.getElementById('moneyNudgeText').textContent =
+      `${unclaimedWeekly.length} weekly chore${unclaimedWeekly.length>1?'s':''} still available this week`;
+    document.getElementById('moneyNudgeAmt').textContent = `+$${leftWeek.toFixed(2)}`;
+    nudge.classList.add('show');
+  } else {
+    nudge.classList.remove('show');
+  }
+
+  // 3. STREAK PREVIEW
+  const preview  = document.getElementById('streakPreview');
+  const tier     = getStreakTier(streak);
+  const nextTier = STREAK_TIERS.find(t=>t.days>streak);
+  if(tier) {
+    const streakExtra = (tier.cash * daysLeft).toFixed(2);
+    document.getElementById('streakPreviewMsg').innerHTML =
+      `<span>${streak}-day streak</span> active · Keep going to earn <span>+$${streakExtra}</span> more this month`;
+    document.getElementById('streakPreviewAmt').textContent = `+$${tier.cash.toFixed(2)}/day`;
+    preview.classList.add('show');
+  } else if(nextTier) {
+    const daysNeeded  = nextTier.days - streak;
+    const bonusIfHit  = (nextTier.cash * daysLeft).toFixed(2);
+    document.getElementById('streakPreviewMsg').innerHTML =
+      `<span>${daysNeeded} more day${daysNeeded>1?'s':''}</span> to unlock streak bonus · Worth <span>+$${bonusIfHit}</span> if you start now`;
+    document.getElementById('streakPreviewAmt').textContent = `+$${nextTier.cash.toFixed(2)}/day`;
+    preview.classList.add('show');
+  } else {
+    preview.classList.remove('show');
+  }
 }
 
 function choreCard(c, isBonus=false) {
@@ -553,10 +692,10 @@ function getLevel(xp) {
 
 // ── STREAK BONUS TIERS ──
 const STREAK_TIERS = [
-  { days:3,  xp:5,  cash:0.25 },
-  { days:7,  xp:10, cash:0.50 },
-  { days:14, xp:15, cash:0.75 },
-  { days:30, xp:25, cash:1.25 },
+  { days:3,  xp:10, cash:0.50 },
+  { days:7,  xp:20, cash:1.00 },
+  { days:14, xp:40, cash:2.00 },
+  { days:30, xp:80, cash:4.00 },
 ];
 function getStreakTier(streak) {
   let tier = null;
