@@ -26,7 +26,28 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .hdr-right{text-align:right;}
 .hdr-cash-val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--green);letter-spacing:2px;line-height:1;}
 .hdr-cash-lbl{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
-.hdr-gamertag{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;color:var(--orange);text-transform:uppercase;margin-bottom:2px;}
+.hdr-gamertag{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;color:var(--orange);text-transform:uppercase;margin-bottom:1px;}
+.hdr-level{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted2);margin-bottom:3px;}
+.hdr-level span{color:var(--gold,#FFD700);}
+
+/* STREAK BONUS CARD */
+.streak-bonus-card{background:var(--panel);border:1px solid rgba(255,215,0,0.25);border-radius:4px;padding:14px 16px;margin-bottom:12px;display:none;}
+.streak-bonus-card.active{display:block;}
+.streak-bonus-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.streak-bonus-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:#FFD700;}
+.streak-bonus-days{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--red);}
+.streak-bonus-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.streak-milestones{display:flex;gap:6px;margin-top:8px;}
+.streak-mile{flex:1;text-align:center;padding:6px 4px;border-radius:3px;border:1px solid var(--border);}
+.streak-mile.reached{border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.08);}
+.streak-mile.current{border-color:#FFD700;background:rgba(255,215,0,0.15);box-shadow:0 0 10px rgba(255,215,0,0.2);}
+.streak-mile-days{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--text);}
+.streak-mile.reached .streak-mile-days,.streak-mile.current .streak-mile-days{color:#FFD700;}
+.streak-mile-bonus{font-size:9px;letter-spacing:1px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;}
+.streak-mile.reached .streak-mile-bonus,.streak-mile.current .streak-mile-bonus{color:var(--orange2);}
+.streak-claim-btn{width:100%;margin-top:10px;padding:10px;background:linear-gradient(90deg,#b8860b,#FFD700,#b8860b);border:none;border-radius:3px;color:#000;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;cursor:pointer;display:none;}
+.streak-claim-btn.show{display:block;}
+.streak-claim-btn.pending{background:var(--blue);color:#fff;}
 
 /* SYNC STATUS */
 .sync-bar{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--panel);border:1px solid var(--border);border-radius:4px;margin-bottom:12px;}
@@ -171,6 +192,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     <div class="logo">APEX<span>EARN</span></div>
     <div class="hdr-right">
       <div class="hdr-gamertag">iopops227</div>
+      <div class="hdr-level" id="levelTitle">ROOKIE</div>
       <div class="hdr-cash-val" id="cashVal">$0.00</div>
       <div class="hdr-cash-lbl">Owed to You</div>
     </div>
@@ -181,6 +203,39 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     <div class="sync-dot" id="syncDot"></div>
     <div class="sync-txt" id="syncTxt">Connecting...</div>
     <div class="sync-pending-count" id="syncPendingCount"></div>
+  </div>
+
+  <!-- STREAK BONUS CARD -->
+  <div class="streak-bonus-card" id="streakBonusCard">
+    <div class="streak-bonus-top">
+      <div>
+        <div class="streak-bonus-title">🔥 STREAK BONUS</div>
+        <div class="streak-bonus-sub" id="streakBonusSub">Keep it going!</div>
+      </div>
+      <div style="text-align:right">
+        <div class="streak-bonus-days" id="streakBonusDays">0</div>
+        <div class="streak-bonus-sub">DAY STREAK</div>
+      </div>
+    </div>
+    <div class="streak-milestones">
+      <div class="streak-mile" id="mile3">
+        <div class="streak-mile-days">3</div>
+        <div class="streak-mile-bonus">+5 XP/day</div>
+      </div>
+      <div class="streak-mile" id="mile7">
+        <div class="streak-mile-days">7</div>
+        <div class="streak-mile-bonus">+10 XP/day</div>
+      </div>
+      <div class="streak-mile" id="mile14">
+        <div class="streak-mile-days">14</div>
+        <div class="streak-mile-bonus">+15 XP/day</div>
+      </div>
+      <div class="streak-mile" id="mile30">
+        <div class="streak-mile-days">30</div>
+        <div class="streak-mile-bonus">+25 XP/day</div>
+      </div>
+    </div>
+    <button class="streak-claim-btn" id="streakClaimBtn" onclick="claimStreakBonus()">CLAIM STREAK BONUS</button>
   </div>
 
   <!-- CAR VIEWPORT -->
@@ -360,6 +415,53 @@ function render() {
   document.getElementById('statCash').textContent  = `$${unpaid.toFixed(2)}`;
   document.getElementById('statStreak').textContent= `${S.streak||0}🔥`;
 
+  // Level title
+  const lvl = getLevel(S.xp);
+  const lvlEl = document.getElementById('levelTitle');
+  lvlEl.textContent = lvl.title;
+  lvlEl.style.color = lvl.color;
+
+  // Streak bonus card
+  const streak = S.streak||0;
+  const bonusCard = document.getElementById('streakBonusCard');
+  const tier = getStreakTier(streak);
+  if(streak >= 3) {
+    bonusCard.classList.add('active');
+    document.getElementById('streakBonusDays').textContent = streak;
+    // Milestone highlights
+    [3,7,14,30].forEach(d=>{
+      const el=document.getElementById(`mile${d}`);
+      if(!el) return;
+      el.className='streak-mile';
+      if(streak>=d) el.classList.add(streak===d||STREAK_TIERS.find(t=>t.days===d)?'reached':'reached');
+    });
+    // Highlight current tier
+    if(tier) {
+      const curEl=document.getElementById(`mile${tier.days}`);
+      if(curEl){ curEl.className='streak-mile current'; }
+      // Sub text
+      document.getElementById('streakBonusSub').textContent=`+${tier.xp} XP · +$${tier.cash.toFixed(2)} per day`;
+      // Claim button
+      const btn=document.getElementById('streakClaimBtn');
+      const today=todayKey();
+      const bonusPending=!!(S.pending&&S.pending.streakBonus&&S.pending.streakBonus.key===today);
+      const bonusClaimed=S.streakBonusClaimed===today;
+      btn.className='streak-claim-btn show';
+      if(bonusPending){ btn.textContent='⏳ BONUS PENDING APPROVAL'; btn.classList.add('pending'); }
+      else if(bonusClaimed){ btn.textContent='✓ BONUS CLAIMED TODAY'; btn.style.background='rgba(0,214,143,0.2)'; btn.style.color='var(--green)'; }
+      else { btn.textContent=`CLAIM +${tier.xp} XP · +$${tier.cash.toFixed(2)} STREAK BONUS`; btn.classList.remove('pending'); }
+    } else {
+      document.getElementById('streakBonusSub').textContent=`${3-streak} more days to unlock bonus`;
+    }
+  } else if(streak>0) {
+    bonusCard.classList.add('active');
+    document.getElementById('streakBonusDays').textContent=streak;
+    document.getElementById('streakBonusSub').textContent=`${3-streak} more days to unlock bonus XP`;
+    document.getElementById('streakClaimBtn').className='streak-claim-btn';
+  } else {
+    bonusCard.classList.remove('active');
+  }
+
   // Pending panel
   const pendingEntries = Object.entries(S.pending||{});
   const pp = document.getElementById('pendingPanel');
@@ -432,7 +534,49 @@ function renderGarage() {
   }).join('');
 }
 
-// ── CLAIM CHORE ──
+// ── LEVELS ──
+const LEVELS = [
+  { min:0,    title:'ROOKIE',   color:'#7070A0' },
+  { min:100,  title:'GRINDER',  color:'#FF9A3C' },
+  { min:250,  title:'HUSTLER',  color:'#FF6B00' },
+  { min:500,  title:'BALLER',   color:'#00A8FF' },
+  { min:800,  title:'ELITE',    color:'#00D68F' },
+  { min:1200, title:'PRO',      color:'#C084FC' },
+  { min:1700, title:'LEGEND',   color:'#FF2D55' },
+  { min:2500, title:'GOAT 👑',  color:'#FFD700' },
+];
+function getLevel(xp) {
+  let lvl = LEVELS[0];
+  for(const l of LEVELS){ if(xp>=l.min) lvl=l; else break; }
+  return lvl;
+}
+
+// ── STREAK BONUS TIERS ──
+const STREAK_TIERS = [
+  { days:3,  xp:5,  cash:0.25 },
+  { days:7,  xp:10, cash:0.50 },
+  { days:14, xp:15, cash:0.75 },
+  { days:30, xp:25, cash:1.25 },
+];
+function getStreakTier(streak) {
+  let tier = null;
+  for(const t of STREAK_TIERS){ if(streak>=t.days) tier=t; else break; }
+  return tier;
+}
+
+// ── CLAIM STREAK BONUS ──
+window.claimStreakBonus = async function() {
+  const tier = getStreakTier(S.streak||0);
+  if(!tier) return;
+  const today = todayKey();
+  if(S.streakBonusClaimed === today) { toast('Streak bonus already claimed today'); return; }
+  const claim = { key:today, xp:tier.xp, name:`${S.streak}-Day Streak Bonus`, icon:'🔥', freq:'daily', ts:Date.now(), isStreakBonus:true };
+  const updates = {};
+  updates[`${ROOT}/pending/streakBonus`] = claim;
+  updates[`${ROOT}/notifications/lastClaim`] = { choreId:'streakBonus', name:claim.name, xp:tier.xp, ts:Date.now(), seen:false };
+  await update(ref(db), updates);
+  toast(`⏳ STREAK BONUS SENT — +${tier.xp} XP awaiting approval`);
+};
 window.claimChore = async function(id) {
   const chore=CHORES.find(c=>c.id===id);
   const key=periodKey(chore), xp=getXP(id);
@@ -454,14 +598,15 @@ onValue(ref(db, ROOT), (snapshot) => {
   const data = snapshot.val() || {};
   const prevXP = S.xp;
   S = {
-    xp:           data.xp           || 0,
-    done:         data.done          || {},
-    pending:      data.pending       || {},
-    streak:       data.streak        || 0,
-    lastStreakDay:data.lastStreakDay  || null,
-    cashPerXP:    data.cashPerXP     || 0.05,
-    choreXP:      data.choreXP       || {},
-    totalPaid:    data.totalPaid     || 0,
+    xp:                data.xp                || 0,
+    done:              data.done               || {},
+    pending:           data.pending            || {},
+    streak:            data.streak             || 0,
+    lastStreakDay:     data.lastStreakDay       || null,
+    cashPerXP:         data.cashPerXP          || 0.05,
+    choreXP:           data.choreXP            || {},
+    totalPaid:         data.totalPaid          || 0,
+    streakBonusClaimed:data.streakBonusClaimed || null,
   };
   // XP burst if parent just approved
   if(S.xp > prevXP && prevXP > 0) {
