@@ -196,7 +196,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
   <!-- STATS -->
   <div class="stats-row">
-    <div class="stat s-xp"><div class="stat-val" id="statXP">0</div><div class="stat-lbl">Total XP</div></div>
+    <div class="stat s-xp"><div class="stat-val" id="statXP" style="font-size:16px;letter-spacing:1px;">0</div><div class="stat-lbl">XP · Level</div></div>
     <div class="stat s-cash"><div class="stat-val" id="statCash">$0</div><div class="stat-lbl">Owed</div></div>
     <div class="stat s-streak"><div class="stat-val" id="statPaid">$0</div><div class="stat-lbl">Paid Out</div></div>
   </div>
@@ -358,7 +358,10 @@ function renderDashboard() {
   const totalEarned = xp * cpr;
   const totalPaid = S.totalPaid || 0;
   const unpaid = Math.max(0, totalEarned - totalPaid);
-  document.getElementById('statXP').textContent     = xp;
+  // Level
+  const LEVELS=[{min:0,title:'ROOKIE'},{min:100,title:'GRINDER'},{min:250,title:'HUSTLER'},{min:500,title:'BALLER'},{min:800,title:'ELITE'},{min:1200,title:'PRO'},{min:1700,title:'LEGEND'},{min:2500,title:'GOAT 👑'}];
+  let lvl=LEVELS[0]; for(const l of LEVELS){if(xp>=l.min)lvl=l;else break;}
+  document.getElementById('statXP').textContent     = `${xp} · ${lvl.title}`;
   document.getElementById('statCash').textContent   = `$${unpaid.toFixed(2)}`;
   document.getElementById('statPaid').textContent   = `$${totalPaid.toFixed(2)}`;
   document.getElementById('rateInput').value        = cpr;
@@ -478,15 +481,18 @@ document.addEventListener('input',e=>{ if(e.target.id==='rateInput') updateRateN
 window.approveChore = async function(id) {
   const claim=S.pending[id]; if(!claim) return;
   const newXP=(S.xp||0)+claim.xp;
-  // Streak logic
-  let streak=S.streak||0, lastStreakDay=S.lastStreakDay||null;
   const updates={};
   updates[`${ROOT}/xp`]=newXP;
   updates[`${ROOT}/pending/${id}`]=null;
-  updates[`${ROOT}/done/${id}/${claim.key}`]=true;
-  // Log history
+  // For streak bonus, mark claimed date instead of done
+  if(claim.isStreakBonus) {
+    updates[`${ROOT}/streakBonusClaimed`]=claim.key;
+  } else {
+    updates[`${ROOT}/done/${id}/${claim.key}`]=true;
+  }
   const histKey=Date.now();
-  updates[`${ROOT}/history/${histKey}`]={ name:claim.name, icon:claim.icon, xp:claim.xp, ts:Date.now(), action:'approved' };
+  const cpr=S.cashPerXP||0.05;
+  updates[`${ROOT}/history/${histKey}`]={ name:claim.name, icon:claim.icon||'📋', xp:claim.xp, cash:(claim.xp*cpr).toFixed(2), ts:Date.now(), action:'approved' };
   await update(ref(db), updates);
   toast(`✅ APPROVED: ${claim.name} · +${claim.xp} XP`);
 };
